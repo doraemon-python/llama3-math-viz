@@ -61,61 +61,72 @@
         
         <div class="flow-connector-dot"></div>
         
-        <!-- Block 3: RMSNorm 1 -->
-        <div class="flow-block block-norm" data-node="rmsnorm">
-          <div class="block-symbol">N</div>
-          <div class="block-content">
-            <div class="block-title">RMSNorm (Pre-Attention)</div>
-            <div class="block-subtext">Weight : &gamma;_attn</div>
+        <!-- Transformer Block (Repeats 32x) -->
+        <div class="transformer-loop-container">
+          <div class="loop-badge">
+            <i data-lucide="repeat" class="loop-badge-icon"></i>
+            <span>Transformer Block (×32)</span>
+            <select id="layer-selector" class="layer-selector-dropdown" title="レイヤー選択"></select>
           </div>
-          <div class="block-indicators">
-            <span class="indicator-circle" title="Scale parameter gamma">&gamma;</span>
-            <span class="indicator-circle text-muted" title="Epsilon value: 1e-5">&epsilon;</span>
-          </div>
-        </div>
-        
-        <div class="flow-connector-dot"></div>
-        
-        <!-- Block 4: Grouped Query Attention -->
-        <div class="flow-block block-attn" data-node="gqa">
-          <div class="block-symbol">A</div>
-          <div class="block-content">
-            <div class="block-title">Grouped-Query Attention</div>
-            <div class="block-subtext">Weights : W_q, W_k, W_v, W_o</div>
-          </div>
-          <div class="block-indicators">
-            <span class="indicator-circle" title="Weights Matrices">W</span>
-            <span class="indicator-circle" title="Rotary Position Embedding">R</span>
-          </div>
-        </div>
-        
-        <div class="flow-connector-dot"></div>
-        
-        <!-- Block 5: RMSNorm 2 -->
-        <div class="flow-block block-norm" data-node="rmsnorm2">
-          <div class="block-symbol">N</div>
-          <div class="block-content">
-            <div class="block-title">RMSNorm (Pre-MLP)</div>
-            <div class="block-subtext">Weight : &gamma;_mlp</div>
-          </div>
-          <div class="block-indicators">
-            <span class="indicator-circle" title="Scale parameter gamma">&gamma;</span>
-            <span class="indicator-circle text-muted" title="Epsilon value: 1e-5">&epsilon;</span>
-          </div>
-        </div>
-        
-        <div class="flow-connector-dot"></div>
-        
-        <!-- Block 6: SwiGLU MLP -->
-        <div class="flow-block block-mlp" data-node="swiglu">
-          <div class="block-symbol">M</div>
-          <div class="block-content">
-            <div class="block-title">SwiGLU MLP</div>
-            <div class="block-subtext">Weights : W_gate, W_up, W_down</div>
-          </div>
-          <div class="block-indicators">
-            <span class="indicator-circle" title="Weights Matrices">W</span>
-            <span class="indicator-circle" title="SiLU/Swish activation function">S</span>
+          
+          <div class="loop-content">
+            <!-- Block 3: RMSNorm 1 -->
+            <div class="flow-block block-norm" data-node="rmsnorm">
+              <div class="block-symbol">N</div>
+              <div class="block-content">
+                <div class="block-title">RMSNorm (Pre-Attention)</div>
+                <div class="block-subtext">Weight : &gamma;_attn</div>
+              </div>
+              <div class="block-indicators">
+                <span class="indicator-circle" title="Scale parameter gamma">&gamma;</span>
+                <span class="indicator-circle text-muted" title="Epsilon value: 1e-5">&epsilon;</span>
+              </div>
+            </div>
+            
+            <div class="flow-connector-dot"></div>
+            
+            <!-- Block 4: Grouped Query Attention -->
+            <div class="flow-block block-attn" data-node="gqa">
+              <div class="block-symbol">A</div>
+              <div class="block-content">
+                <div class="block-title">Grouped-Query Attention</div>
+                <div class="block-subtext">Weights : W_q, W_k, W_v, W_o</div>
+              </div>
+              <div class="block-indicators">
+                <span class="indicator-circle" title="Weights Matrices">W</span>
+                <span class="indicator-circle" title="Rotary Position Embedding">R</span>
+              </div>
+            </div>
+            
+            <div class="flow-connector-dot"></div>
+            
+            <!-- Block 5: RMSNorm 2 -->
+            <div class="flow-block block-norm" data-node="rmsnorm2">
+              <div class="block-symbol">N</div>
+              <div class="block-content">
+                <div class="block-title">RMSNorm (Pre-MLP)</div>
+                <div class="block-subtext">Weight : &gamma;_mlp</div>
+              </div>
+              <div class="block-indicators">
+                <span class="indicator-circle" title="Scale parameter gamma">&gamma;</span>
+                <span class="indicator-circle text-muted" title="Epsilon value: 1e-5">&epsilon;</span>
+              </div>
+            </div>
+            
+            <div class="flow-connector-dot"></div>
+            
+            <!-- Block 6: SwiGLU MLP -->
+            <div class="flow-block block-mlp" data-node="swiglu">
+              <div class="block-symbol">M</div>
+              <div class="block-content">
+                <div class="block-title">SwiGLU MLP</div>
+                <div class="block-subtext">Weights : W_gate, W_up, W_down</div>
+              </div>
+              <div class="block-indicators">
+                <span class="indicator-circle" title="Weights Matrices">W</span>
+                <span class="indicator-circle" title="SiLU/Swish activation function">S</span>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -153,47 +164,68 @@
             <i data-lucide="x"></i>
           </button>
         </div>
+
+        <!-- Modal Tab Navigation -->
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="math">
+            <i data-lucide="book-open"></i>
+            <span>解説・数式</span>
+          </button>
+          <button class="tab-btn" data-tab="sandbox">
+            <i data-lucide="sliders"></i>
+            <span>シミュレーター</span>
+          </button>
+          <button class="tab-btn" data-tab="code">
+            <i data-lucide="code-2"></i>
+            <span>実装コード</span>
+          </button>
+        </div>
         
         <!-- Modal Body Content -->
         <div class="modal-body">
-          <!-- Text description -->
-          <div class="glass-card modal-section-card">
-            <p id="modal-desc" class="modal-description-text"></p>
-          </div>
           
-          <!-- Shapes and LaTeX side-by-side or stacked -->
-          <div class="modal-details-grid">
+          <!-- Tab 1: Math & Explanation -->
+          <div id="tab-math" class="tab-content active">
+            <!-- Text description -->
             <div class="glass-card modal-section-card">
-              <div class="section-title">
-                <i data-lucide="binary" class="text-cyan"></i>
-                <h3>厳密な数式定義</h3>
-              </div>
-              <div class="math-container">
-                <div id="modal-math-latex"></div>
-              </div>
+              <p id="modal-desc" class="modal-description-text"></p>
             </div>
             
-            <div class="glass-card modal-section-card">
-              <div class="section-title">
-                <i data-lucide="box" class="text-blue"></i>
-                <h3>テンソル形状フロー (Shape Flow)</h3>
+            <!-- Shapes and LaTeX side-by-side or stacked -->
+            <div class="modal-details-grid">
+              <div class="glass-card modal-section-card">
+                <div class="section-title">
+                  <i data-lucide="binary" class="text-cyan"></i>
+                  <h3>厳密な数式定義</h3>
+                </div>
+                <div class="math-container">
+                  <div id="modal-math-latex"></div>
+                </div>
               </div>
-              <table class="shapes-table">
-                <thead>
-                  <tr>
-                    <th>対象</th>
-                    <th>テンソル形状 (Tensor Shape)</th>
-                  </tr>
-                </thead>
-                <tbody id="modal-shapes-table-body">
-                </tbody>
-              </table>
+              
+              <div class="glass-card modal-section-card">
+                <div class="section-title">
+                  <i data-lucide="box" class="text-blue"></i>
+                  <h3>テンソル形状フロー (Shape Flow)</h3>
+                </div>
+                <div class="table-wrapper">
+                  <table class="shapes-table">
+                    <thead>
+                      <tr>
+                        <th>対象</th>
+                        <th>テンソル形状 (Tensor Shape)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="modal-shapes-table-body">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
           
-          <!-- Sandbox & Code side-by-side or stacked -->
-          <div class="modal-interactive-grid">
-            
+          <!-- Tab 2: Interactive Sandbox -->
+          <div id="tab-sandbox" class="tab-content">
             <div class="glass-card modal-section-card">
               <div class="section-title">
                 <i data-lucide="sliders" class="text-emerald"></i>
@@ -210,7 +242,10 @@
                 </div>
               </div>
             </div>
-            
+          </div>
+          
+          <!-- Tab 3: PyTorch Code -->
+          <div id="tab-code" class="tab-content">
             <div class="glass-card modal-section-card">
               <div class="section-title">
                 <i data-lucide="code-2" class="text-amber"></i>
@@ -224,9 +259,13 @@
                 <pre><code class="language-python" id="modal-code-snippet"></code></pre>
               </div>
             </div>
-            
           </div>
+
         </div>
+        
+      </div>
+    </div>
+  </div>
         
       </div>
     </div>

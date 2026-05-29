@@ -668,3 +668,213 @@ body {
 .text-amber { color: var(--color-amber); }
 .text-muted { color: var(--text-muted); }
 .text-center { text-align: center; }
+
+/* --- Transformer Loop Grouping --- */
+.transformer-loop-container {
+  border: 2px dashed rgba(139, 92, 246, 0.35);
+  border-radius: 16px;
+  padding: 32px 16px 16px 16px;
+  margin: 16px 0;
+  background: rgba(139, 92, 246, 0.03);
+  width: 100%;
+  position: relative;
+  box-shadow: inset 0 0 15px rgba(139, 92, 246, 0.05);
+}
+
+.loop-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #6d28d9, #4c1d95);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.loop-badge-icon {
+  width: 14px;
+  height: 14px;
+  animation: spin-slow 8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.layer-selector-dropdown {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.2s;
+}
+
+.layer-selector-dropdown:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.layer-selector-dropdown option {
+  background: #0f172a;
+  color: white;
+}
+
+.loop-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 0;
+}
+
+/* --- Modal Tabs --- */
+.modal-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 14px 20px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.tab-btn i {
+  width: 16px;
+  height: 16px;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  color: var(--text-highlight);
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-violet);
+  box-shadow: 0 0 8px var(--color-violet);
+}
+
+.tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 16px;
+  overscroll-behavior: contain;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+/* --- Table Wrapper for Scroll --- */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 8px;
+}
+
+/* --- Strict Modal Height Containment --- */
+.modal-container {
+  height: 85vh;
+  max-height: 85vh;
+}
+
+.modal-body {
+  overflow: hidden; /* Restrict body from scrolling, let tabs handle scrolling */
+  display: flex;
+  flex-direction: column;
+  padding: 20px !important;
+}
+
+/* Ensure math & code wrappers can scroll horizontally and look great */
+.math-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+
+.code-body {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 40vh;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 640px) {
+  .modal-container {
+    height: 80vh;
+    max-height: 80vh;
+  }
+  
+  .tab-btn {
+    padding: 12px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  
+  .tab-btn i {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .modal-tabs {
+    padding: 0 8px;
+    justify-content: space-between;
+  }
+  
+  .transformer-loop-container {
+    padding: 28px 10px 12px 10px;
+  }
+  
+  .loop-badge {
+    padding: 3px 10px;
+    font-size: 11px;
+    gap: 6px;
+  }
+}
+

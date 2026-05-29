@@ -2,6 +2,7 @@ import { modelComponents, tokenizeText, getMockEmbedding, mockVocabulary, Llama3
 
 // State management
 let activeNodeId = null;
+let activeLayerIndex = 1;
 
 // Elements
 const modalOverlay = document.getElementById('details-modal');
@@ -14,12 +15,17 @@ const modalSandboxInputs = document.getElementById('modal-sandbox-inputs');
 const modalSandboxStepsOutput = document.getElementById('modal-sandbox-steps-output');
 const modalBtnCopyCode = document.getElementById('modal-btn-copy-code');
 const modalCodeSnippet = document.getElementById('modal-code-snippet');
+const layerSelector = document.getElementById('layer-selector');
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
 
 // Initializer
 document.addEventListener('DOMContentLoaded', () => {
   initBlocks();
   initModalClose();
   initCopyCode();
+  initLayerSelector();
+  initTabs();
   
   // Refresh Lucide Icons
   if (window.lucide) {
@@ -40,13 +46,80 @@ function initBlocks() {
   });
 }
 
-// 2. Modal open logic
+// 2. Layer Selector Init
+function initLayerSelector() {
+  if (!layerSelector) return;
+  
+  for (let i = 1; i <= 32; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.innerText = `Layer ${i}`;
+    layerSelector.appendChild(opt);
+  }
+  
+  layerSelector.addEventListener('change', (e) => {
+    activeLayerIndex = parseInt(e.target.value);
+  });
+}
+
+// 3. Modal Tabs Init
+function initTabs() {
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.getAttribute('data-tab');
+      
+      tabButtons.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      
+      btn.classList.add('active');
+      const targetContent = document.getElementById(`tab-${tabId}`);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    });
+  });
+}
+
+// Helper to compile inline LaTeX math expressions
+function renderTextWithMath(text) {
+  if (!text) return "";
+  return text.replace(/\$(.*?)\$/g, (match, formula) => {
+    try {
+      if (window.katex) {
+        return window.katex.renderToString(formula, {
+          throwOnError: false,
+          displayMode: false
+        });
+      }
+      return match;
+    } catch (e) {
+      return match;
+    }
+  });
+}
+
+// 4. Modal open logic
 function openModal(nodeId) {
   if (!modelComponents[nodeId]) return;
   activeNodeId = nodeId;
   
+  // Reset tabs to default (first tab: math)
+  tabButtons.forEach(b => b.classList.remove('active'));
+  tabContents.forEach(c => c.classList.remove('active'));
+  if (tabButtons[0]) tabButtons[0].classList.add('active');
+  const defaultTabContent = document.getElementById('tab-math');
+  if (defaultTabContent) defaultTabContent.classList.add('active');
+  
   const comp = modelComponents[nodeId];
-  modalTitle.innerText = comp.name;
+  
+  // Dynamic Title showing active layer if applicable
+  const loopNodes = ['rmsnorm', 'gqa', 'rmsnorm2', 'swiglu'];
+  let titleText = comp.name;
+  if (loopNodes.includes(nodeId)) {
+    titleText += ` (Layer ${activeLayerIndex}/32)`;
+  }
+  modalTitle.innerText = titleText;
+  
   modalDesc.innerText = comp.description;
   
   // Render LaTeX using KaTeX
@@ -63,11 +136,11 @@ function openModal(nodeId) {
     modalMathLatex.innerHTML = `<pre>${comp.latex}</pre>`;
   }
   
-  // Render Shapes
+  // Render Shapes (with KaTeX compile)
   modalShapesTableBody.innerHTML = comp.shapes.map(s => `
     <tr>
-      <td>${s.label}</td>
-      <td>${s.shape}</td>
+      <td>${renderTextWithMath(s.label)}</td>
+      <td>${renderTextWithMath(s.shape)}</td>
     </tr>
   `).join('');
   
