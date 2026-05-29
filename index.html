@@ -23,346 +23,212 @@
 <body>
   <div class="app-container">
     <!-- Header -->
-    <header class="app-header">
-      <div class="brand">
-        <i data-lucide="cpu" class="brand-icon"></i>
-        <div>
-          <h1>Llama 3 Math Explorer</h1>
-          <p class="subtitle">Llama3 8B 内部構造と厳密数式ビジュアライザー</p>
-        </div>
-      </div>
-      
-      <!-- Tokenizer Bar -->
-      <div class="tokenizer-bar glass-card">
-        <div class="tokenizer-input-group">
-          <i data-lucide="languages" class="input-icon"></i>
-          <input type="text" id="tokenizer-input" placeholder="トークナイザー テキストを入力..." value="Llama 3 is awesome">
-        </div>
-        <div class="tokenizer-output" id="tokenizer-output-chips">
-          <!-- Token chips will be rendered here dynamically -->
-        </div>
-      </div>
+    <header class="app-header-centered">
+      <i data-lucide="cpu" class="brand-icon"></i>
+      <h1>Llama 3 Math Explorer</h1>
+      <p class="subtitle">Llama 3 8B 内部構造と厳密数式ビジュアライザー</p>
     </header>
 
-    <div class="app-layout">
-      <!-- Sidebar Navigation -->
-      <aside class="sidebar glass-card">
-        <h3>アーキテクチャ・モジュール</h3>
-        <nav class="nav-menu" id="module-nav">
-          <!-- Navigation items loaded dynamically -->
-        </nav>
+    <!-- Vertical Block Flow Diagram -->
+    <main class="flow-layout">
+      <div class="vertical-blocks-container">
         
-        <div class="model-meta glass-card">
-          <h4>Llama 3 8B 基本構成</h4>
-          <ul>
-            <li><span>隠れ次元 (d_model)</span> <strong>4096</strong></li>
-            <li><span>レイヤー数 (n_layers)</span> <strong>32</strong></li>
-            <li><span>アテンション・ヘッド数</span> <strong>32 (Q) / 8 (KV)</strong></li>
-            <li><span>ヘッド次元 (d_head)</span> <strong>128</strong></li>
-            <li><span>MLP中間次元 (d_ff)</span> <strong>14336</strong></li>
-            <li><span>RoPEベース周波数 (θ)</span> <strong>500,000</strong></li>
-            <li><span>語彙数 (Vocab Size)</span> <strong>128,256</strong></li>
-          </ul>
-        </div>
-      </aside>
-
-      <!-- Main Visualizer Area -->
-      <main class="main-content overview-mode">
-        <!-- SVG Pipeline Visualizer -->
-        <div class="visualizer-card glass-card">
-          <div class="card-header">
-            <div class="card-title">
-              <i data-lucide="network"></i>
-              <h2>テンソル・データフロー・パイプライン</h2>
-            </div>
-            <span class="badge">クリックで各ブロックの詳細を展開</span>
+        <!-- Block 1: Input/Tokenizer -->
+        <div class="flow-block block-input" data-node="tokenizer">
+          <div class="block-symbol">I</div>
+          <div class="block-content">
+            <div class="block-title">Input (Tokenizer)</div>
+            <div class="block-subtext">Prompt : x</div>
           </div>
-          <div class="canvas-wrapper">
-            <!-- Interacive SVG Network Topology -->
-            <svg id="pipeline-svg" viewBox="0 0 1000 350">
-              <!-- Definitions for gradients and markers -->
-              <defs>
-                <linearGradient id="gradient-flow" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#8b5cf6" />
-                  <stop offset="50%" stop-color="#3b82f6" />
-                  <stop offset="100%" stop-color="#06b6d4" />
-                </linearGradient>
-                <linearGradient id="glow-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.15" />
-                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
-                </linearGradient>
-                <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#4b5563" />
-                </marker>
-                <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
-                </marker>
-              </defs>
-
-              <!-- Main flow line -->
-              <path d="M 50 175 L 930 175" fill="none" stroke="url(#gradient-flow)" stroke-width="3" stroke-dasharray="8 4" />
-
-              <!-- Group Nodes -->
-              <!-- Node 1: Tokenizer -->
-              <g class="svg-node" id="node-tokenizer" transform="translate(40, 125)">
-                <rect width="110" height="100" rx="12" class="node-rect" />
-                <text x="55" y="45" class="node-title">Tokenizer</text>
-                <text x="55" y="65" class="node-text">BPE</text>
-                <text x="55" y="80" class="node-sub">V: 128,256</text>
-                <i data-lucide="languages" class="svg-icon"></i>
-              </g>
-
-              <!-- Node 2: Embedding -->
-              <g class="svg-node" id="node-embedding" transform="translate(180, 125)">
-                <rect width="110" height="100" rx="12" class="node-rect" />
-                <text x="55" y="45" class="node-title">Embedding</text>
-                <text x="55" y="65" class="node-shape">[T] → [T, 4096]</text>
-                <text x="55" y="80" class="node-sub">Untied Weight</text>
-              </g>
-
-              <!-- Block Box: Transformer Block (Layer 0-31) -->
-              <g id="transformer-group" transform="translate(320, 30)">
-                <rect width="470" height="290" rx="16" class="group-box-rect" />
-                <rect x="0" y="0" width="160" height="28" rx="8" class="group-box-label" />
-                <text x="80" y="18" class="group-label-text">Transformer Layer (x32)</text>
-
-                <!-- Sub-node 3: RMSNorm 1 -->
-                <g class="svg-node sub-node" id="node-rmsnorm" transform="translate(20, 95)">
-                  <rect width="90" height="80" rx="8" class="node-rect" />
-                  <text x="45" y="35" class="node-title">RMSNorm</text>
-                  <text x="45" y="55" class="node-text">Pre-Attention</text>
-                  <text x="45" y="70" class="node-sub">eps: 1e-5</text>
-                </g>
-
-                <!-- Sub-node 4: Attention (GQA + RoPE) -->
-                <g class="svg-node sub-node" id="node-gqa" transform="translate(130, 95)">
-                  <rect width="110" height="80" rx="8" class="node-rect" />
-                  <text x="55" y="30" class="node-title">GQA Attention</text>
-                  <text x="55" y="48" class="node-text">32 Q / 8 KV</text>
-                  <!-- RoPE indicator inside attention -->
-                  <g class="svg-node inline-node" id="node-rope" transform="translate(10, 56)">
-                    <rect width="90" height="18" rx="4" class="inline-node-rect" />
-                    <text x="45" y="13" class="inline-node-text">RoPE (θ: 500k)</text>
-                  </g>
-                </g>
-
-                <!-- Sub-node 5: RMSNorm 2 -->
-                <g class="svg-node sub-node" id="node-rmsnorm2" transform="translate(260, 95)">
-                  <rect width="90" height="80" rx="8" class="node-rect" />
-                  <text x="45" y="35" class="node-title">RMSNorm</text>
-                  <text x="45" y="55" class="node-text">Pre-MLP</text>
-                  <text x="45" y="70" class="node-sub">eps: 1e-5</text>
-                </g>
-
-                <!-- Sub-node 6: SwiGLU MLP -->
-                <g class="svg-node sub-node" id="node-swiglu" transform="translate(370, 95)">
-                  <rect width="80" height="80" rx="8" class="node-rect" />
-                  <text x="40" y="35" class="node-title">SwiGLU</text>
-                  <text x="40" y="55" class="node-text">MLP</text>
-                  <text x="40" y="70" class="node-sub">d_ff: 14336</text>
-                </g>
-
-                <!-- Residual arrows and adders -->
-                <!-- Add 1 -->
-                <circle cx="250" cy="175" r="10" class="svg-adder" />
-                <text x="250" y="179" class="adder-plus">+</text>
-                <!-- Add 2 -->
-                <circle cx="460" cy="175" r="10" class="svg-adder" />
-                <text x="460" y="179" class="adder-plus">+</text>
-
-                <!-- Path connections within transformer group -->
-                <!-- Input skip to Add 1 -->
-                <path d="M 0 175 L 10 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-                <path d="M 10 175 L 10 240 L 250 240 L 250 185" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 2" fill="none" marker-end="url(#arrow-blue)" />
-                
-                <!-- RMSNorm1 to GQA -->
-                <path d="M 110 175 L 130 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-                <!-- GQA to Add 1 -->
-                <path d="M 240 175 L 240 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-                
-                <!-- Add 1 output path split -->
-                <path d="M 260 175 L 260 220 L 460 220 L 460 185" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 2" fill="none" marker-end="url(#arrow-blue)" />
-                <path d="M 260 175 L 260 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-
-                <!-- RMSNorm2 to SwiGLU -->
-                <path d="M 350 175 L 370 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-                <!-- SwiGLU to Add 2 -->
-                <path d="M 450 175 L 450 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-              </g>
-
-              <!-- Node 7: Output Layer -->
-              <g class="svg-node" id="node-output" transform="translate(820, 125)">
-                <rect width="110" height="100" rx="12" class="node-rect" />
-                <text x="55" y="40" class="node-title">Output Layer</text>
-                <text x="55" y="58" class="node-text">Norm & Linear</text>
-                <text x="55" y="73" class="node-text">Softmax</text>
-                <text x="55" y="88" class="node-sub">V: 128,256</text>
-              </g>
-
-              <!-- Connections outside group -->
-              <path d="M 150 175 L 180 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-              <path d="M 290 175 L 320 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-              <path d="M 790 175 L 820 175" stroke="#4b5563" fill="none" marker-end="url(#arrow)" />
-            </svg>
+          <div class="block-indicators">
+            <span class="indicator-circle text-muted" title="Vocabulary Size: 128,256">V</span>
           </div>
         </div>
-
-        <!-- End-to-End Dataflow Story Card -->
-        <div class="glass-card story-card">
-          <div class="card-header">
-            <div class="card-title">
-              <i data-lucide="git-commit" class="text-violet"></i>
-              <h2>エンドツーエンド・データフロー接続ストーリー</h2>
-            </div>
-            <span class="badge success">入力から出力へのデータ遷移</span>
+        
+        <div class="flow-connector-dot"></div>
+        
+        <!-- Block 2: Embedding -->
+        <div class="flow-block block-embed" data-node="embedding">
+          <div class="block-symbol">E</div>
+          <div class="block-content">
+            <div class="block-title">Token Embedding</div>
+            <div class="block-subtext">Weight : W_embed</div>
           </div>
-          <div class="card-body">
-            <div class="story-stepper">
-              <div class="story-step active" data-step="1">
-                <div class="step-circle">1</div>
-                <span class="step-label">Tokenize (トークン化)</span>
-              </div>
-              <div class="story-line"></div>
-              <div class="story-step" data-step="2">
-                <div class="step-circle">2</div>
-                <span class="step-label">Embedding (意味ベクトル化)</span>
-              </div>
-              <div class="story-line"></div>
-              <div class="story-step" data-step="3">
-                <div class="step-circle">3</div>
-                <span class="step-label">Pre-RMSNorm (正規化)</span>
-              </div>
-              <div class="story-line"></div>
-              <div class="story-step" data-step="4">
-                <div class="step-circle">4</div>
-                <span class="step-label">GQA + RoPE (相関・位置)</span>
-              </div>
-              <div class="story-line"></div>
-              <div class="story-step" data-step="5">
-                <div class="step-circle">5</div>
-                <span class="step-label">SwiGLU MLP (非線形変換)</span>
-              </div>
-              <div class="story-line"></div>
-              <div class="story-step" data-step="6">
-                <div class="step-circle">6</div>
-                <span class="step-label">Output & Softmax (次トークン決定)</span>
-              </div>
-            </div>
-            <div class="story-content" id="story-content-box">
-              <!-- Content will be rendered dynamically based on active step -->
-            </div>
+          <div class="block-indicators">
+            <span class="indicator-circle" title="Weights Matrix">W</span>
           </div>
         </div>
-
-        <div class="details-grid">
-          <!-- Left side: Description and Mathematical formulas -->
-          <div class="details-left-column">
-            <!-- Description Card -->
-            <div class="glass-card module-info-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i data-lucide="book-open" class="text-violet"></i>
-                  <h3 id="details-title">モジュールを選択してください</h3>
-                </div>
-              </div>
-              <div class="card-body">
-                <p id="details-desc" class="description-text">
-                  上部のパイプラインまたは左メニューからモジュールを選択すると、Llama 3における厳密な定義、数式、テンソル形状のフロー、およびソースコードが表示されます。
-                </p>
-              </div>
-            </div>
-
-            <!-- Mathematical Formulation Card -->
-            <div class="glass-card math-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i data-lucide="binary" class="text-cyan"></i>
-                  <h3>厳密な数式定義</h3>
-                </div>
-              </div>
-              <div class="card-body math-container">
-                <div id="math-latex-container">
-                  <!-- LaTeX equations rendered by KaTeX here -->
-                  $$\text{数式がここに表示されます}$$
-                </div>
-              </div>
-            </div>
+        
+        <div class="flow-connector-dot"></div>
+        
+        <!-- Block 3: RMSNorm 1 -->
+        <div class="flow-block block-norm" data-node="rmsnorm">
+          <div class="block-symbol">N</div>
+          <div class="block-content">
+            <div class="block-title">RMSNorm (Pre-Attention)</div>
+            <div class="block-subtext">Weight : &gamma;_attn</div>
           </div>
-
-          <!-- Right side: Tensor shapes -->
-          <div class="details-right-column">
-            <!-- Shapes Card -->
-            <div class="glass-card shapes-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i data-lucide="box" class="text-blue"></i>
-                  <h3>テンソル形状フロー (Shape Flow)</h3>
-                </div>
-              </div>
-              <div class="card-body">
-                <table class="shapes-table">
-                  <thead>
-                    <tr>
-                      <th>対象</th>
-                      <th>テンソル形状 (Tensor Shape)</th>
-                    </tr>
-                  </thead>
-                  <tbody id="shapes-table-body">
-                    <tr>
-                      <td colspan="2" class="text-muted text-center">モジュール未選択</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div class="block-indicators">
+            <span class="indicator-circle" title="Scale parameter gamma">&gamma;</span>
+            <span class="indicator-circle text-muted" title="Epsilon value: 1e-5">&epsilon;</span>
           </div>
         </div>
+        
+        <div class="flow-connector-dot"></div>
+        
+        <!-- Block 4: Grouped Query Attention -->
+        <div class="flow-block block-attn" data-node="gqa">
+          <div class="block-symbol">A</div>
+          <div class="block-content">
+            <div class="block-title">Grouped-Query Attention</div>
+            <div class="block-subtext">Weights : W_q, W_k, W_v, W_o</div>
+          </div>
+          <div class="block-indicators">
+            <span class="indicator-circle" title="Weights Matrices">W</span>
+            <span class="indicator-circle" title="Rotary Position Embedding">R</span>
+          </div>
+        </div>
+        
+        <div class="flow-connector-dot"></div>
+        
+        <!-- Block 5: RMSNorm 2 -->
+        <div class="flow-block block-norm" data-node="rmsnorm2">
+          <div class="block-symbol">N</div>
+          <div class="block-content">
+            <div class="block-title">RMSNorm (Pre-MLP)</div>
+            <div class="block-subtext">Weight : &gamma;_mlp</div>
+          </div>
+          <div class="block-indicators">
+            <span class="indicator-circle" title="Scale parameter gamma">&gamma;</span>
+            <span class="indicator-circle text-muted" title="Epsilon value: 1e-5">&epsilon;</span>
+          </div>
+        </div>
+        
+        <div class="flow-connector-dot"></div>
+        
+        <!-- Block 6: SwiGLU MLP -->
+        <div class="flow-block block-mlp" data-node="swiglu">
+          <div class="block-symbol">M</div>
+          <div class="block-content">
+            <div class="block-title">SwiGLU MLP</div>
+            <div class="block-subtext">Weights : W_gate, W_up, W_down</div>
+          </div>
+          <div class="block-indicators">
+            <span class="indicator-circle" title="Weights Matrices">W</span>
+            <span class="indicator-circle" title="SiLU/Swish activation function">S</span>
+          </div>
+        </div>
+        
+        <div class="flow-connector-dot"></div>
+        
+        <!-- Block 7: Output Layer -->
+        <div class="flow-block block-output" data-node="output">
+          <div class="block-symbol">O</div>
+          <div class="block-content">
+            <div class="block-title">Output Layer (Softmax)</div>
+            <div class="block-subtext">Weight : W_output</div>
+          </div>
+          <div class="block-indicators">
+            <span class="indicator-circle" title="Output linear projection weight">W</span>
+            <span class="indicator-circle text-muted" title="Softmax probability distribution">S</span>
+          </div>
+        </div>
+        
+      </div>
+    </main>
+  </div>
 
-        <div class="interactive-grid">
-          <!-- Sandbox Panel -->
-          <div class="glass-card sandbox-card">
-            <div class="card-header">
-              <div class="card-title">
+  <!-- Detail Modal Overlay -->
+  <div id="details-modal" class="modal-overlay hidden">
+    <div class="modal-container">
+      <div class="modal-card glass-card">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i data-lucide="info" class="text-violet"></i>
+            <h2 id="modal-title">モジュール詳細</h2>
+          </div>
+          <button id="modal-close-btn" class="modal-close-btn" title="閉じる">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        
+        <!-- Modal Body Content -->
+        <div class="modal-body">
+          <!-- Text description -->
+          <div class="glass-card modal-section-card">
+            <p id="modal-desc" class="modal-description-text"></p>
+          </div>
+          
+          <!-- Shapes and LaTeX side-by-side or stacked -->
+          <div class="modal-details-grid">
+            <div class="glass-card modal-section-card">
+              <div class="section-title">
+                <i data-lucide="binary" class="text-cyan"></i>
+                <h3>厳密な数式定義</h3>
+              </div>
+              <div class="math-container">
+                <div id="modal-math-latex"></div>
+              </div>
+            </div>
+            
+            <div class="glass-card modal-section-card">
+              <div class="section-title">
+                <i data-lucide="box" class="text-blue"></i>
+                <h3>テンソル形状フロー (Shape Flow)</h3>
+              </div>
+              <table class="shapes-table">
+                <thead>
+                  <tr>
+                    <th>対象</th>
+                    <th>テンソル形状 (Tensor Shape)</th>
+                  </tr>
+                </thead>
+                <tbody id="modal-shapes-table-body">
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Sandbox & Code side-by-side or stacked -->
+          <div class="modal-interactive-grid">
+            
+            <div class="glass-card modal-section-card">
+              <div class="section-title">
                 <i data-lucide="sliders" class="text-emerald"></i>
-                <h3 id="sandbox-title">数値計算サンドボックス</h3>
+                <h3>数値計算サンドボックス</h3>
               </div>
-              <span class="badge success">リアルタイム計算</span>
-            </div>
-            <div class="card-body sandbox-layout">
-              <div class="sandbox-inputs" id="sandbox-inputs-container">
-                <!-- Inputs generated dynamically depending on node selection -->
-              </div>
-              <div class="sandbox-arrow">
-                <i data-lucide="arrow-right"></i>
-              </div>
-              <div class="sandbox-results" id="sandbox-results-container">
-                <h4>計算プロセスと結果</h4>
-                <div class="results-flow" id="sandbox-steps-output">
-                  <!-- Step by step calculations rendered here -->
-                  <div class="placeholder-text text-muted">モジュールを選択すると対話型計算シミュレーターが起動します。</div>
+              <div class="sandbox-layout">
+                <div class="sandbox-inputs" id="modal-sandbox-inputs"></div>
+                <div class="sandbox-arrow">
+                  <i data-lucide="arrow-right"></i>
+                </div>
+                <div class="sandbox-results">
+                  <h4>計算プロセスと結果</h4>
+                  <div class="results-flow" id="modal-sandbox-steps-output"></div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Code Panel -->
-          <div class="glass-card code-card">
-            <div class="card-header">
-              <div class="card-title">
+            
+            <div class="glass-card modal-section-card">
+              <div class="section-title">
                 <i data-lucide="code-2" class="text-amber"></i>
-                <h3>PyTorch 実装 (Meta Llama 3 準拠)</h3>
+                <h3>PyTorch 実装 (Llama 3 準拠)</h3>
+                <button class="btn-copy" id="modal-btn-copy-code" title="コードをコピー">
+                  <i data-lucide="copy"></i>
+                  <span>コピー</span>
+                </button>
               </div>
-              <button class="btn-copy" id="btn-copy-code" title="コードをコピー">
-                <i data-lucide="copy"></i>
-                <span>コピー</span>
-              </button>
+              <div class="code-body">
+                <pre><code class="language-python" id="modal-code-snippet"></code></pre>
+              </div>
             </div>
-            <div class="card-body code-body">
-              <pre><code class="language-python" id="code-snippet-container"># PyTorchの実装コードがここに表示されます。</code></pre>
-            </div>
+            
           </div>
         </div>
-      </main>
+        
+      </div>
     </div>
   </div>
   

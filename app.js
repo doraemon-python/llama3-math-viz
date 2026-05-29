@@ -4,28 +4,22 @@ import { modelComponents, tokenizeText, getMockEmbedding, mockVocabulary, Llama3
 let activeNodeId = null;
 
 // Elements
-const moduleNav = document.getElementById('module-nav');
-const pipelineSvg = document.getElementById('pipeline-svg');
-const detailsTitle = document.getElementById('details-title');
-const detailsDesc = document.getElementById('details-desc');
-const mathContainer = document.getElementById('math-latex-container');
-const shapesTableBody = document.getElementById('shapes-table-body');
-const codeSnippetContainer = document.getElementById('code-snippet-container');
-const btnCopyCode = document.getElementById('btn-copy-code');
-const tokenizerInput = document.getElementById('tokenizer-input');
-const tokenizerOutputChips = document.getElementById('tokenizer-output-chips');
-const sandboxTitle = document.getElementById('sandbox-title');
-const sandboxInputsContainer = document.getElementById('sandbox-inputs-container');
-const sandboxStepsOutput = document.getElementById('sandbox-steps-output');
+const modalOverlay = document.getElementById('details-modal');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const modalTitle = document.getElementById('modal-title');
+const modalDesc = document.getElementById('modal-desc');
+const modalMathLatex = document.getElementById('modal-math-latex');
+const modalShapesTableBody = document.getElementById('modal-shapes-table-body');
+const modalSandboxInputs = document.getElementById('modal-sandbox-inputs');
+const modalSandboxStepsOutput = document.getElementById('modal-sandbox-steps-output');
+const modalBtnCopyCode = document.getElementById('modal-btn-copy-code');
+const modalCodeSnippet = document.getElementById('modal-code-snippet');
 
 // Initializer
 document.addEventListener('DOMContentLoaded', () => {
-  initTokenizer();
-  initNavigation();
-  initSvgInteraction();
-  selectOverview();
+  initBlocks();
+  initModalClose();
   initCopyCode();
-  initStoryStepper();
   
   // Refresh Lucide Icons
   if (window.lucide) {
@@ -33,151 +27,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// 1. Tokenizer functions
-function initTokenizer() {
-  tokenizerInput.addEventListener('input', (e) => {
-    renderTokenizerChips(e.target.value);
-    renderStoryStep(activeStoryStep);
-  });
-  renderTokenizerChips(tokenizerInput.value);
-}
-
-function renderTokenizerChips(text) {
-  if (!text) {
-    tokenizerOutputChips.innerHTML = '<span class="placeholder-text text-muted" style="font-size:11px;">テキストなし</span>';
-    return;
-  }
-  const tokens = tokenizeText(text);
-  tokenizerOutputChips.innerHTML = tokens.map(tok => `
-    <div class="token-chip">
-      <span class="token-text">${escapeHtml(tok.text)}</span>
-      <span class="token-id">${tok.id}</span>
-    </div>
-  `).join('');
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-// 2. Navigation rendering
-function initNavigation() {
-  moduleNav.innerHTML = '';
-  
-  // Add Overview (Overall Flow) button first
-  const overviewItem = document.createElement('button');
-  overviewItem.className = `nav-item ${activeNodeId === null ? 'active' : ''}`;
-  overviewItem.id = 'nav-overview';
-  overviewItem.innerHTML = `
-    <span>全体の流れ (Overview)</span>
-    <span class="node-badge" style="background: rgba(139, 92, 246, 0.2); color: #c084fc;">ALL</span>
-  `;
-  overviewItem.addEventListener('click', () => selectOverview());
-  moduleNav.appendChild(overviewItem);
-  
-  Object.keys(modelComponents).forEach((key) => {
-    const comp = modelComponents[key];
-    const navItem = document.createElement('button');
-    navItem.className = `nav-item ${key === activeNodeId ? 'active' : ''}`;
-    navItem.id = `nav-${key}`;
-    navItem.innerHTML = `
-      <span>${comp.name.split(' ')[1]}</span>
-      <span class="node-badge">${comp.id.toUpperCase()}</span>
-    `;
-    navItem.addEventListener('click', () => selectNode(key));
-    moduleNav.appendChild(navItem);
-  });
-}
-
-function selectOverview() {
-  activeNodeId = null;
-  
-  // Update sidebar active state
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  const ovNav = document.getElementById('nav-overview');
-  if (ovNav) ovNav.classList.add('active');
-  
-  // Remove active class from SVG nodes
-  const svgNodes = pipelineSvg.querySelectorAll('.svg-node');
-  svgNodes.forEach(node => {
-    node.classList.remove('active');
-  });
-  
-  // Add overview-mode class to main content
-  const mainContent = document.querySelector('.main-content');
-  if (mainContent) mainContent.classList.add('overview-mode');
-}
-
-// 3. SVG Nodes interaction
-function initSvgInteraction() {
-  const nodes = pipelineSvg.querySelectorAll('.svg-node');
-  nodes.forEach(node => {
-    node.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const nodeId = node.id.replace('node-', '');
-      if (modelComponents[nodeId]) {
-        selectNode(nodeId);
+// 1. Bind block clicks
+function initBlocks() {
+  const blocks = document.querySelectorAll('.flow-block');
+  blocks.forEach(block => {
+    block.addEventListener('click', () => {
+      const nodeId = block.getAttribute('data-node');
+      if (nodeId) {
+        openModal(nodeId);
       }
     });
   });
 }
 
-// 4. Select node logic
-function selectNode(nodeId) {
+// 2. Modal open logic
+function openModal(nodeId) {
   if (!modelComponents[nodeId]) return;
   activeNodeId = nodeId;
   
-  // Remove overview-mode from main content container
-  const mainContent = document.querySelector('.main-content');
-  if (mainContent) mainContent.classList.remove('overview-mode');
-  
-  // Remove active class from overview nav item
-  const ovNav = document.getElementById('nav-overview');
-  if (ovNav) ovNav.classList.remove('active');
-  
-  // Update sidebar active state
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  const activeNavItem = document.getElementById(`nav-${nodeId}`);
-  if (activeNavItem) activeNavItem.classList.add('active');
-  
-  // Update SVG active state
-  const svgNodes = pipelineSvg.querySelectorAll('.svg-node');
-  svgNodes.forEach(node => {
-    node.classList.remove('active');
-  });
-  const activeSvgNode = pipelineSvg.getElementById(`node-${nodeId}`);
-  if (activeSvgNode) activeSvgNode.classList.add('active');
-  
-  // Render Details
   const comp = modelComponents[nodeId];
-  detailsTitle.innerText = comp.name;
-  detailsDesc.innerText = comp.description;
+  modalTitle.innerText = comp.name;
+  modalDesc.innerText = comp.description;
   
   // Render LaTeX using KaTeX
   if (window.katex) {
     try {
-      window.katex.render(comp.latex, mathContainer, {
+      window.katex.render(comp.latex, modalMathLatex, {
         throwOnError: false,
         displayMode: true
       });
     } catch (err) {
-      mathContainer.innerHTML = `<pre>${comp.latex}</pre>`;
+      modalMathLatex.innerHTML = `<pre>${comp.latex}</pre>`;
     }
   } else {
-    mathContainer.innerHTML = `<pre>${comp.latex}</pre>`;
+    modalMathLatex.innerHTML = `<pre>${comp.latex}</pre>`;
   }
   
   // Render Shapes
-  shapesTableBody.innerHTML = comp.shapes.map(s => `
+  modalShapesTableBody.innerHTML = comp.shapes.map(s => `
     <tr>
       <td>${s.label}</td>
       <td>${s.shape}</td>
@@ -185,31 +72,62 @@ function selectNode(nodeId) {
   `).join('');
   
   // Render Code
-  codeSnippetContainer.innerText = comp.pytorch;
+  modalCodeSnippet.innerText = comp.pytorch;
   
   // Render Sandbox
-  sandboxTitle.innerText = `${comp.name.split('. ')[1]} - 数値計算サンドボックス`;
   buildSandboxInputs(comp.sandbox);
   calculateSandbox(nodeId);
+  
+  // Show Modal overlay
+  modalOverlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; // Lock background scrolling
+  
+  // Refresh Lucide Icons inside modal
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 }
 
-// 5. Code Copy
+// 3. Modal close logic
+function initModalClose() {
+  modalCloseBtn.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      closeModal();
+    }
+  });
+  
+  // Close with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modalOverlay.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+}
+
+function closeModal() {
+  modalOverlay.classList.add('hidden');
+  document.body.style.overflow = 'auto'; // Enable background scrolling
+  activeNodeId = null;
+}
+
+// 4. Code Copy
 function initCopyCode() {
-  btnCopyCode.addEventListener('click', () => {
-    navigator.clipboard.writeText(codeSnippetContainer.innerText).then(() => {
-      btnCopyCode.classList.add('copied');
-      btnCopyCode.querySelector('span').innerText = 'コピー済';
+  modalBtnCopyCode.addEventListener('click', () => {
+    navigator.clipboard.writeText(modalCodeSnippet.innerText).then(() => {
+      modalBtnCopyCode.classList.add('copied');
+      modalBtnCopyCode.querySelector('span').innerText = 'コピー済';
       setTimeout(() => {
-        btnCopyCode.classList.remove('copied');
-        btnCopyCode.querySelector('span').innerText = 'コピー';
+        modalBtnCopyCode.classList.remove('copied');
+        modalBtnCopyCode.querySelector('span').innerText = 'コピー';
       }, 2000);
     });
   });
 }
 
-// 6. Build Sandbox UI
+// 5. Build Sandbox UI inside modal
 function buildSandboxInputs(sandboxConf) {
-  sandboxInputsContainer.innerHTML = '';
+  modalSandboxInputs.innerHTML = '';
   
   sandboxConf.inputs.forEach(input => {
     const wrapper = document.createElement('div');
@@ -266,7 +184,7 @@ function buildSandboxInputs(sandboxConf) {
       wrapper.appendChild(el);
     }
     
-    sandboxInputsContainer.appendChild(wrapper);
+    modalSandboxInputs.appendChild(wrapper);
     
     // Add real-time event listener to input
     const targetEl = wrapper.querySelector('input') || wrapper.querySelector('select');
@@ -276,9 +194,9 @@ function buildSandboxInputs(sandboxConf) {
   });
 }
 
-// 7. Calculate Sandbox Values
+// 6. Calculate Sandbox Values inside modal
 function calculateSandbox(nodeId) {
-  sandboxStepsOutput.innerHTML = '';
+  modalSandboxStepsOutput.innerHTML = '';
   
   try {
     switch (nodeId) {
@@ -298,7 +216,7 @@ function calculateSandbox(nodeId) {
             <div class="step-calc">${JSON.stringify(tokens.map(t => ({ token: t.text, id: t.id })), null, 2)}</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
       
@@ -319,11 +237,12 @@ function calculateSandbox(nodeId) {
             <div class="step-calc">[${vec.join(', ')}]</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
       
-      case 'rmsnorm': {
+      case 'rmsnorm':
+      case 'rmsnorm2': {
         const rawVec = document.getElementById('sb-vector').value.split(',').map(Number);
         const rawGamma = document.getElementById('sb-gamma').value.split(',').map(Number);
         const eps = Number(document.getElementById('sb-eps').value);
@@ -369,7 +288,7 @@ function calculateSandbox(nodeId) {
             <div class="step-calc">Output = [${output.map(v => v.toFixed(4)).join(', ')}]</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
       
@@ -412,7 +331,7 @@ function calculateSandbox(nodeId) {
             <div class="step-calc">y0 = x0·cos(ω) - x1·sin(ω) = ${out0.toFixed(4)}\ny1 = x0·sin(ω) + x1·cos(ω) = ${out1.toFixed(4)}\nOutput = [${out0.toFixed(4)}, ${out1.toFixed(4)}]</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
       
@@ -453,7 +372,7 @@ function calculateSandbox(nodeId) {
             <div class="step-calc">Attention Output = Σ P_t × V_t (Head [${qIdx}])</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
       
@@ -534,7 +453,7 @@ function calculateSandbox(nodeId) {
             <div class="step-calc">Output = [${output.map(v => v.toFixed(4)).join(', ')}]</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
       
@@ -584,217 +503,24 @@ function calculateSandbox(nodeId) {
             <div class="step-calc" style="color: var(--color-emerald)">★選択: "${tokens[maxIdx]}" (確率: ${(maxProb * 100).toFixed(2)}%)</div>
           </div>
         `;
-        sandboxStepsOutput.innerHTML = stepsHtml;
+        modalSandboxStepsOutput.innerHTML = stepsHtml;
         break;
       }
     }
   } catch (err) {
-    sandboxStepsOutput.innerHTML = `<div class="step-block" style="border-left-color: var(--color-amber);">
+    modalSandboxStepsOutput.innerHTML = `<div class="step-block" style="border-left-color: var(--color-amber);">
       <div class="step-title" style="color: var(--color-amber)">計算エラー</div>
       <div class="step-calc" style="color: var(--text-muted)">${err.message}</div>
     </div>`;
   }
 }
 
-// 8. Story Stepper Controller
-let activeStoryStep = 1;
-
-function initStoryStepper() {
-  const steps = document.querySelectorAll('.story-step');
-  steps.forEach(step => {
-    step.addEventListener('click', () => {
-      const stepNum = parseInt(step.getAttribute('data-step'));
-      selectStoryStep(stepNum);
-    });
-  });
-  selectStoryStep(activeStoryStep);
-}
-
-function selectStoryStep(stepNum) {
-  activeStoryStep = stepNum;
-  document.querySelectorAll('.story-step').forEach(step => {
-    step.classList.remove('active');
-  });
-  const activeStepEl = document.querySelector(`.story-step[data-step="${stepNum}"]`);
-  if (activeStepEl) activeStepEl.classList.add('active');
-  
-  // Render the story step content
-  renderStoryStep(stepNum);
-  
-  // Highlight the SVG node, but do not open the details panel (keep in overview mode)
-  const stepToNodeMap = {
-    1: 'tokenizer',
-    2: 'embedding',
-    3: 'rmsnorm',
-    4: 'gqa',
-    5: 'swiglu',
-    6: 'output'
-  };
-  const nodeId = stepToNodeMap[stepNum];
-  
-  const svgNodes = pipelineSvg.querySelectorAll('.svg-node');
-  svgNodes.forEach(node => {
-    node.classList.remove('active');
-  });
-  if (nodeId) {
-    const activeSvgNode = pipelineSvg.getElementById(`node-${nodeId}`);
-    if (activeSvgNode) activeSvgNode.classList.add('active');
-  }
-}
-
-function renderStoryStep(stepNum) {
-  const text = tokenizerInput.value || "Llama 3 is awesome";
-  const tokens = tokenizeText(text);
-  const tokenIds = tokens.map(t => t.id);
-  const contentBox = document.getElementById('story-content-box');
-  if (!contentBox) return;
-  
-  let html = '';
-  
-  switch (stepNum) {
-    case 1:
-      html = `
-        <h3 class="text-violet" style="font-size:16px; font-weight:600; margin-bottom: 8px;">Step 1: テキスト入力からトークン化へ (BPE Tokenizer)</h3>
-        <p class="description-text">
-          モデルのデータ処理は、ユーザーが入力したテキストをバイトペアエンコーディング（BPE）で細分化された「トークンID」の並びに置き換えるところからスタートします。
-          Llama 3では128,256語の辞書を用いており、日本語やコード等も効率良く圧縮されます。
-        </p>
-        <div class="story-meta-flow">
-          <span class="flow-tag" style="background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: #60a5fa;">入力テキスト: "${escapeHtml(text)}"</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag">トークンID: [${tokenIds.join(', ')}]</span>
-        </div>
-        <p class="description-text" style="font-size: 13px; margin-top: 8px;">
-          この変換によって、自然言語がニューラルネットワークが処理可能な「離散数値の配列（形状: <code>[Sequence_Length]</code> = <code>[${tokens.length}]</code>）」に整えられ、Embedding層へ引き渡されます。
-        </p>
-      `;
-      break;
-    case 2:
-      html = `
-        <h3 class="text-violet" style="font-size:16px; font-weight:600; margin-bottom: 8px;">Step 2: トークンIDを高次元意味ベクトルに変換 (Embedding)</h3>
-        <p class="description-text">
-          ステップ1で得られたトークンID <code>[${tokenIds.slice(0, 3).join(', ')}${tokenIds.length > 3 ? '...' : ''}]</code> をキーとして、巨大な単語埋め込み行列 <code>W_embed</code>（サイズ 128,256 × 4096）から対応する行ベクトルを引き出します。
-        </p>
-        <div class="story-meta-flow">
-          <span class="flow-tag">トークンID: [${tokens.length}個]</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag" style="color:#22d3ee; background:rgba(6,182,212,0.15); border-color:rgba(6,182,212,0.3);">Embeddingテンソル 形状: [${tokens.length}, 4096]</span>
-        </div>
-        <p class="description-text" style="font-size: 13px; margin-top: 8px;">
-          これにより、意味のないただのID番号が、「4096次元の意味空間座標」を持つ連続値テンソルに変化します。この高次元ベクトルがアテンション層やMLP層を伝搬していく「モデルの隠れ状態」になります。
-        </p>
-      `;
-      break;
-    case 3:
-      html = `
-        <h3 class="text-violet" style="font-size:16px; font-weight:600; margin-bottom: 8px;">Step 3: 学習安定化のための分布補正 (Pre-RMSNorm)</h3>
-        <p class="description-text">
-          高次元化された各トークンの4096次元ベクトルは、Transformer層に入る直前に <strong>RMSNorm</strong> レイヤーを通されます。
-          Llama 3では計算効率を上げるため、平均値の減算を省き、要素の二乗平均平方根 (RMS) のみを使ってベクトルの分散を均一化（ノルムを1付近に制限）します。
-        </p>
-        <div class="story-meta-flow">
-          <span class="flow-tag" style="color:#22d3ee; background:rgba(6,182,212,0.15); border-color:rgba(6,182,212,0.3);">入力形状: [${tokens.length}, 4096]</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag">正規化処理 (RMSNorm)</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag" style="color:#22d3ee; background:rgba(6,182,212,0.15); border-color:rgba(6,182,212,0.3);">出力形状: [${tokens.length}, 4096]</span>
-        </div>
-        <p class="description-text" style="font-size: 13px; margin-top: 8px;">
-          式： $\\text{RMSNorm}(\\mathbf{x}) = \\frac{\\mathbf{x}}{\\sqrt{\\frac{1}{d}\\sum x_i^2 + \\epsilon}} \\odot \\gamma$ 。各トークンのスケールが揃うことで、勾配消失や勾配爆発を防ぎ、深いモデルでの安定した学習を実現しています。
-        </p>
-      `;
-      break;
-    case 4:
-      html = `
-        <h3 class="text-violet" style="font-size:16px; font-weight:600; margin-bottom: 8px;">Step 4: トークン間の相関分析と相対位置の考慮 (GQA Attention + RoPE)</h3>
-        <p class="description-text">
-          正規化された隠れ状態から、W_q, W_k, W_v 投影行列を介して各ヘッドのテンソルを作成します。ここで <strong>RoPE (回転位置埋め込み)</strong> を適用し、2次元のペアごとに回転を加えることで「文脈内の相対位置関係」をベクトル自体に組み込みます。
-          その後、<strong>GQA (Grouped-Query Attention)</strong> に従い、4つのQueryヘッドにつき1つのKVヘッドのペアがアテンションマップを作り、文脈を織り交ぜた加重和を算出します。
-        </p>
-        <div class="story-meta-flow">
-          <span class="flow-tag">Q: [${tokens.length}, 32, 128] / K,V: [${tokens.length}, 8, 128]</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag" style="color:#a78bfa; background:rgba(139,92,246,0.15); border-color:rgba(139,92,246,0.3);">RoPE回転 → GQA積 → 加重和</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag">結合 & W_o投影 → [${tokens.length}, 4096]</span>
-        </div>
-        <p class="description-text" style="font-size: 13px; margin-top: 8px;">
-          計算された結果は、入力（アテンション前のテンソル）と<strong>残差接続 (Residual Connection)</strong> で足し合わされます。
-          これにより情報が劣化せずに多層を通り抜けることができます。
-        </p>
-      `;
-      break;
-    case 5:
-      html = `
-        <h3 class="text-violet" style="font-size:16px; font-weight:600; margin-bottom: 8px;">Step 5: 高次特徴の非線形抽出と変換 (SwiGLU MLP)</h3>
-        <p class="description-text">
-          アテンションを終えた隠れ状態は、再度 RMSNorm で正規化され、<strong>SwiGLU MLP</strong> ネットワークへ送られます。
-          従来のMLPに比べ、Llama 3では <code>W_gate</code>, <code>W_up</code>, <code>W_down</code> の3つの投影行列を用います。中間層でチャネル数を 14,336 次元まで広げて表現力を高め、ゲート側には高精度な SiLU (Swish) 活性化を施します。
-        </p>
-        <div class="story-meta-flow">
-          <span class="flow-tag">入力: [${tokens.length}, 4096]</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag">中間次元拡張: [${tokens.length}, 14336]</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag">SiLUゲート積 & 圧縮: [${tokens.length}, 4096]</span>
-        </div>
-        <p class="description-text" style="font-size: 13px; margin-top: 8px;">
-          式： $(SiLU(x W_{\\text{gate}}) \\odot x W_{\\text{up}}) W_{\\text{down}}$。この高度な非線形射影により、単なる線形和（アテンション）では捉えきれない複雑な事実、論理関係、知識表現が獲得されます。こちらも最後は入力と残差接続で足されます。
-        </p>
-      `;
-      break;
-    case 6:
-      html = `
-        <h3 class="text-violet" style="font-size:16px; font-weight:600; margin-bottom: 8px;">Step 6: 層の積み重ねの終着点と次のトークン予測 (Final RMSNorm & Softmax)</h3>
-        <p class="description-text">
-          ステップ3〜5のTransformerブロック処理が<strong>計32回（32レイヤー）</strong>繰り返された後、テンソルは最終RMSNormを通されます。
-          そして <code>W_output</code> 投影行列（サイズ 4096 × 128,256）によって語彙サイズに射影され、各トークンの予測スコア（Logits）が算出されます。
-        </p>
-        <div class="story-meta-flow">
-          <span class="flow-tag">最終出力: [${tokens.length}, 4096]</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag">語彙射影: [128256] Logits</span>
-          <span class="flow-arrow"><i data-lucide="arrow-right" style="width:14px; height:14px; vertical-align:middle;"></i></span>
-          <span class="flow-tag" style="color:#10b981; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3);">Softmax 確率確率分布 → 次の単語決定</span>
-        </div>
-        <p class="description-text" style="font-size: 13px; margin-top: 8px;">
-          文章の最後のトークン位置にあたる Logits に対し、<strong>Softmax関数</strong>を適用することで合計値1.0の確率分布に変換します。
-          最も確率の高いトークンを取り出すことで次の1トークンが出力されます。この出力トークンを入力文に追加して同様のプロセスを繰り返す（自動回帰生成）ことで、長文が生成されていきます。
-        </p>
-      `;
-      break;
-  }
-  
-  contentBox.innerHTML = html;
-  
-  // Re-render KaTeX if there are LaTeX formulas
-  if (window.katex) {
-    const mathElements = contentBox.querySelectorAll('strong, p');
-    mathElements.forEach(el => {
-      const text = el.innerHTML;
-      if (text.includes('$')) {
-        const parts = text.split('$');
-        let newHtml = '';
-        for (let idx = 0; idx < parts.length; idx++) {
-          if (idx % 2 === 1) {
-            try {
-              const tempSpan = document.createElement('span');
-              window.katex.render(parts[idx], tempSpan, { throwOnError: false, displayMode: false });
-              newHtml += tempSpan.innerHTML;
-            } catch (e) {
-              newHtml += '$' + parts[idx] + '$';
-            }
-          } else {
-            newHtml += parts[idx];
-          }
-        }
-        el.innerHTML = newHtml;
-      }
-    });
-  }
-  
-  // Re-create icons inside the story content box
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
+// 7. HTML Utility Escape
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
