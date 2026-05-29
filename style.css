@@ -71,6 +71,7 @@ body {
   max-width: 1600px;
   margin: 0 auto;
   gap: 20px;
+  width: 100%;
 }
 
 /* Glassmorphism Common Card */
@@ -218,6 +219,7 @@ body {
   flex-direction: column;
   gap: 20px;
   height: fit-content;
+  min-width: 0;
 }
 
 .sidebar h3 {
@@ -321,6 +323,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
 /* Visualizer Card */
@@ -523,6 +526,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
 .module-info-card {
@@ -835,6 +839,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.04);
   overflow-x: auto;
   gap: 10px;
+  max-width: 100%;
 }
 
 .story-step {
