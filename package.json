@@ -1,0 +1,14 @@
+{
+  "name": "llama3-math-viz",
+  "version": "1.0.0",
+  "description": "Interactive Mathematical Visualization of Llama 3 Architecture",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
