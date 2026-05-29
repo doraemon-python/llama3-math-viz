@@ -379,11 +379,26 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* SVG Node and Path Styles */
 #pipeline-svg {
   user-select: none;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 900px) {
+  #pipeline-svg {
+    min-width: 850px;
+  }
+  .canvas-wrapper {
+    justify-content: flex-start;
+  }
 }
 
 .svg-node {
@@ -610,7 +625,7 @@ body {
   align-items: stretch;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 850px) {
   .sandbox-layout {
     flex-direction: column;
   }
@@ -926,4 +941,64 @@ body {
 
 .flow-arrow {
   color: var(--text-muted);
+}
+
+/* Mobile and general responsive adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tokenizer-bar {
+    max-width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tokenizer-input-group {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-right: 0;
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+  }
+  .tokenizer-output {
+    max-height: 80px;
+    margin-top: 5px;
+  }
+  .story-stepper {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    padding: 12px;
+    gap: 12px;
+  }
+  .glass-card {
+    padding: 14px !important;
+    border-radius: 12px;
+  }
+  .main-content {
+    gap: 12px;
+  }
+  .details-grid, .interactive-grid {
+    gap: 12px;
+  }
+  .brand h1 {
+    font-size: 22px;
+  }
+  .brand .subtitle {
+    font-size: 11px;
+  }
+  .shapes-table th, .shapes-table td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+  .code-body {
+    padding: 10px;
+  }
+  .code-body code {
+    font-size: 11px;
+  }
 }
