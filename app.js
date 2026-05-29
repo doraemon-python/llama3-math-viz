@@ -1,7 +1,7 @@
 import { modelComponents, tokenizeText, getMockEmbedding, mockVocabulary, Llama3Config } from './llama3_model.js';
 
 // State management
-let activeNodeId = 'tokenizer';
+let activeNodeId = null;
 
 // Elements
 const moduleNav = document.getElementById('module-nav');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTokenizer();
   initNavigation();
   initSvgInteraction();
-  selectNode(activeNodeId);
+  selectOverview();
   initCopyCode();
   initStoryStepper();
   
@@ -68,6 +68,18 @@ function escapeHtml(str) {
 // 2. Navigation rendering
 function initNavigation() {
   moduleNav.innerHTML = '';
+  
+  // Add Overview (Overall Flow) button first
+  const overviewItem = document.createElement('button');
+  overviewItem.className = `nav-item ${activeNodeId === null ? 'active' : ''}`;
+  overviewItem.id = 'nav-overview';
+  overviewItem.innerHTML = `
+    <span>全体の流れ (Overview)</span>
+    <span class="node-badge" style="background: rgba(139, 92, 246, 0.2); color: #c084fc;">ALL</span>
+  `;
+  overviewItem.addEventListener('click', () => selectOverview());
+  moduleNav.appendChild(overviewItem);
+  
   Object.keys(modelComponents).forEach((key) => {
     const comp = modelComponents[key];
     const navItem = document.createElement('button');
@@ -80,6 +92,27 @@ function initNavigation() {
     navItem.addEventListener('click', () => selectNode(key));
     moduleNav.appendChild(navItem);
   });
+}
+
+function selectOverview() {
+  activeNodeId = null;
+  
+  // Update sidebar active state
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const ovNav = document.getElementById('nav-overview');
+  if (ovNav) ovNav.classList.add('active');
+  
+  // Remove active class from SVG nodes
+  const svgNodes = pipelineSvg.querySelectorAll('.svg-node');
+  svgNodes.forEach(node => {
+    node.classList.remove('active');
+  });
+  
+  // Add overview-mode class to main content
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) mainContent.classList.add('overview-mode');
 }
 
 // 3. SVG Nodes interaction
@@ -100,6 +133,14 @@ function initSvgInteraction() {
 function selectNode(nodeId) {
   if (!modelComponents[nodeId]) return;
   activeNodeId = nodeId;
+  
+  // Remove overview-mode from main content container
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) mainContent.classList.remove('overview-mode');
+  
+  // Remove active class from overview nav item
+  const ovNav = document.getElementById('nav-overview');
+  if (ovNav) ovNav.classList.remove('active');
   
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -580,7 +621,7 @@ function selectStoryStep(stepNum) {
   // Render the story step content
   renderStoryStep(stepNum);
   
-  // Proactively select the corresponding pipeline block for the user to sync views
+  // Highlight the SVG node, but do not open the details panel (keep in overview mode)
   const stepToNodeMap = {
     1: 'tokenizer',
     2: 'embedding',
@@ -590,8 +631,14 @@ function selectStoryStep(stepNum) {
     6: 'output'
   };
   const nodeId = stepToNodeMap[stepNum];
-  if (nodeId && nodeId !== activeNodeId) {
-    selectNode(nodeId);
+  
+  const svgNodes = pipelineSvg.querySelectorAll('.svg-node');
+  svgNodes.forEach(node => {
+    node.classList.remove('active');
+  });
+  if (nodeId) {
+    const activeSvgNode = pipelineSvg.getElementById(`node-${nodeId}`);
+    if (activeSvgNode) activeSvgNode.classList.add('active');
   }
 }
 

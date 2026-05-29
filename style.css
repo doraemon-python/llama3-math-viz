@@ -1065,3 +1065,9 @@ body {
     grid-template-columns: 1fr; /* Stack meta back to 1 col on extremely narrow viewports */
   }
 }
+
+/* Overview Mode - Progressive Disclosure */
+.main-content.overview-mode .details-grid,
+.main-content.overview-mode .interactive-grid {
+  display: none !important;
+}
