@@ -401,14 +401,19 @@ body {
   display: block;
   width: 100%;
   height: auto;
+  flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
   #pipeline-svg {
+    width: 850px;
     min-width: 850px;
   }
   .canvas-wrapper {
-    justify-content: flex-start;
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -959,6 +964,40 @@ body {
 }
 
 /* Mobile and general responsive adjustments */
+@media (max-width: 1024px) {
+  .sidebar {
+    padding: 14px;
+    gap: 14px;
+  }
+  .nav-menu {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+  .nav-item {
+    padding: 8px 10px;
+    font-size: 12px;
+    justify-content: center;
+    text-align: center;
+    border-radius: 8px;
+  }
+  .nav-item:hover {
+    transform: none; /* Disable shift animation on mobile */
+  }
+  .nav-item .node-badge {
+    display: none; /* Hide badge to save space */
+  }
+  .model-meta ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 16px;
+  }
+  .model-meta {
+    padding: 12px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-header {
     flex-direction: column;
@@ -1015,5 +1054,14 @@ body {
   }
   .code-body code {
     font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .nav-menu {
+    grid-template-columns: repeat(3, 1fr); /* 3 cols on small phones */
+  }
+  .model-meta ul {
+    grid-template-columns: 1fr; /* Stack meta back to 1 col on extremely narrow viewports */
   }
 }
